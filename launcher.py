@@ -76,7 +76,7 @@ class launcher:
         # Show state on OLED display
         self.show_mode()
 
-    def show_message(self, title='', message=''):
+    def set_display_contents(self, title='', message=''):
         """ Show state on OLED display """
         # Clear Screen
         self.oled.cls()
@@ -98,7 +98,7 @@ class launcher:
             self.MODE_MAZE: 'Maze',
             self.MODE_CALIBRATION: 'Calibration',
         }
-        self.show_message(title='Mode: %s' % mode_map[self.mode])
+        self.set_display_contents(title='Mode: %s' % mode_map[self.mode])
 
     def show_motor_config(self, left):
         """ Show motor/aux config on OLED display """
@@ -119,7 +119,7 @@ class launcher:
     def display_config(self, title, servo):
         message = '%d / %d / %d' % (servo.servo_min, servo.servo_mid, servo.servo_max)
 
-        self.show_message(title=title, message=message)
+        self.set_display_contents(title=title, message=message)
 
     def read_config(self):
         # Read the config file when starting up.
@@ -178,17 +178,17 @@ class launcher:
     def run(self):
         """ Main Running loop controling bot mode and menu state """
         # Show state on OLED display
-        self.show_message(title='Booting...')
+        self.set_display_contents(title='Booting...')
 
         # Read config file FIRST
         self.read_config()
 
-        self.show_message(title='Initialising Bluetooth...')
+        self.set_display_contents(title='Initialising Bluetooth...')
 
         # Never stop looking for wiimote.
         while not self.killed:
             # Show state on OLED display
-            self.show_message(
+            self.set_display_contents(
                 title='Waiting for WiiMote...',
                 message='***Press 1+2 now ***'
             )
@@ -267,4 +267,4 @@ if __name__ == "__main__":
         print("Stopping")
         print(str(e))
         # Show state on OLED display
-        launcher.show_message(title='Exited Python Code')
+        launcher.set_display_contents(title='Exited Python Code')
