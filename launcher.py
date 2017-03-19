@@ -100,23 +100,20 @@ class launcher:
         }
         self.set_display_contents(title='Mode: %s' % mode_map[self.mode])
 
-    def show_motor_config(self, left):
-        """ Show motor/aux config on OLED display """
-        side_label = 'Left' if left else 'Right'
-        title = '%s Motor:' % side_label
-        servo = self.core.left_servo if left else self.core.right_servo
-
-        self.display_config(title, servo)
-
-    def show_aux_1_config(self, left):
-        """ Show motor/aux config on OLED display """
-        side_label = 'Left' if left else 'Right'
-        title = '%s Aux 1:' % side_label
-        servo = self.core.left_aux_1_servo if left else self.core.right_aux_1_servo
-
-        self.display_config(title, servo)
-
     def display_config(self, title, servo):
+        # determine title template
+        if servo in [self.core.left_servo,self.core.right_servo]:
+            msg_template = '%s Motor:'
+        else:
+            msg_template = '%s Aux 1:'
+
+        # Determine handedness
+        if servo in [self.core.left_servo, self.core.left_aux_1_servo]:
+            handedness = 'Left'
+        else:
+            handedness = 'Right'
+
+        title = template % handedness
         message = '%d / %d / %d' % (servo.servo_min, servo.servo_mid, servo.servo_max)
 
         self.set_display_contents(title=title, message=message)

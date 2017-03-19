@@ -26,12 +26,25 @@ class Calibration:
         self.mode_left_aux_1 = 3
         self.mode_right_aux_1 = 4
 
+        self.servo_dict = {
+            self.mode_left: self.core.left_servo,
+            self.mode_right: self.core.right_servo,
+            self.mode_left_aux_1: self.core.mode_left_aux_1,
+            self.mode_right_aux_1: self.core.mode_right_aux_1,
+        }
+
         # Default current mode to NONE
         self.mode = self.mode_none
 
     def stop(self):
         """Simple method to stop the RC loop"""
         self.killed = True
+
+    def get_mode_servo(self):
+        """get the relevant servo for the current mode"""
+        # Look up the servo using the current mode as the key.
+        # Returns none for no match
+        return self.servo_dict.get(self.mode)
 
     def run(self):
         """ Main Challenge method. Has to exist and is the
@@ -60,40 +73,22 @@ class Calibration:
                     self.mode = self.mode_right
                     value_adjusted = True
 
+                mode_servo = self.get_mode_servo()
+
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_PLUS):
                     value_adjusted = True
-                    if self.mode == self.mode_left:
-                        self.core.left_servo.adjust_range(adjust_value)
-                    if self.mode == self.mode_right:
-                        self.core.right_servo.adjust_range(adjust_value)
-                    if self.mode == self.mode_left_aux_1:
-                        self.core.left_aux_1_servo.adjust_range(adjust_value)
-                    if self.mode == self.mode_right_aux_1:
-                        self.core.right_aux_1_servo.adjust_range(adjust_value)
+                    mode_servo.adjust_range(adjust_value)
 
                 if (classic_buttons_state & cwiid.CLASSIC_BTN_MINUS):
                     value_adjusted = True
-                    if self.mode == self.mode_left:
-                        self.core.left_servo.adjust_range(-adjust_value)
-                    if self.mode == self.mode_right:
-                        self.core.right_servo.adjust_range(-adjust_value)
-                    if self.mode == self.mode_left_aux_1:
-                        self.core.left_aux_1_servo.adjust_range(-adjust_value)
-                    if self.mode == self.mode_right_aux_1:
-                        self.core.right_aux_1_servo.adjust_range(-adjust_value)
+                    mode_servo.adjust_range(adjust_value)
 
             # Show current config
             if self.launcher and value_adjusted:
-                if self.mode == self.mode_left:
-                    self.launcher.show_motor_config(True)
-                elif self.mode == self.mode_right:
-                    self.launcher.show_motor_config(False)
-                elif self.mode == self.mode_left_aux_1:
-                    self.launcher.show_aux_1_config(True)
-                elif self.mode == self.mode_right_aux_1:
-                    self.launcher.show_aux_1_config(False)
-                else:
+                if self.mode == self.mode_none:
                     self.launcher.show_mode()
+                else:
+                    self.launcher.display_config(mode_servo)
                 # Send motors "stick neutral" so that we can test centre value
                 self.core.throttle(0.0, 0.0)
 
