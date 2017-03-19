@@ -76,11 +76,16 @@ class launcher:
         # Show state on OLED display
         self.show_mode()
 
-    def show_message(self, message):
+    def show_message(self, title, message=''):
         """ Show state on OLED display """
-        self.oled.cls()  # Clear Screen
-        self.oled.canvas.text((10, 10), message, fill=1)
-        # Now show the mesasge on the screen
+        # Clear Screen
+        self.oled.cls()
+        # Show the title
+        self.oled.canvas.text((10, 10), title, fill=1)
+        # Now show the message on the screen if required
+        if message:
+            self.oled.canvas.text((10, 30), message, fill=1)
+
         self.oled.display()
 
     def show_mode(self):
