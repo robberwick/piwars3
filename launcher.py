@@ -85,21 +85,15 @@ class launcher:
 
     def show_mode(self):
         """ Show state on OLED display """
-        self.oled.cls()  # Clear Screen
-        # self.oled.canvas.text((10, 10), 'mode', fill=1)
         # Show appropriate mode
-        if self.mode == self.MODE_NONE:
-            self.oled.canvas.text((10, 10), 'Mode:', fill=1)
-        elif self.mode == self.MODE_RC:
-            self.oled.canvas.text((10, 10), 'Mode: RC', fill=1)
-        elif self.mode == self.MODE_WALL:
-            self.oled.canvas.text((10, 10), 'Mode: Wall', fill=1)
-        elif self.mode == self.MODE_MAZE:
-            self.oled.canvas.text((10, 10), 'Mode: Maze', fill=1)
-        elif self.mode == self.MODE_CALIBRATION:
-            self.oled.canvas.text((10, 10), 'Mode: Calibration', fill=1)
-        # Now show the mesasge on the screen
-        self.oled.display()
+        mode_map = {
+            self.MODE_NONE: '',
+            self.MODE_RC: 'RC',
+            self.MODE_WALL: 'Wall',
+            self.MODE_MAZE: 'Maze',
+            self.MODE_CALIBRATION: 'Calibration',
+        }
+        self.show_message('Mode: %s' % mode_map[self.mode])
 
     def show_motor_config(self, left):
         """ Show motor/aux config on OLED display """
