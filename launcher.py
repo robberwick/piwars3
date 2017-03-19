@@ -76,7 +76,7 @@ class launcher:
         # Show state on OLED display
         self.show_mode()
 
-    def show_message(self, title, message=''):
+    def show_message(self, title='', message=''):
         """ Show state on OLED display """
         # Clear Screen
         self.oled.cls()
@@ -98,7 +98,7 @@ class launcher:
             self.MODE_MAZE: 'Maze',
             self.MODE_CALIBRATION: 'Calibration',
         }
-        self.show_message('Mode: %s' % mode_map[self.mode])
+        self.show_message(title='Mode: %s' % mode_map[self.mode])
 
     def show_motor_config(self, left):
         """ Show motor/aux config on OLED display """
@@ -119,11 +119,7 @@ class launcher:
     def display_config(self, title, servo):
         message = '%d / %d / %d' % (servo.servo_min, servo.servo_mid, servo.servo_max)
 
-        self.oled.cls()  # Clear Screen
-        self.oled.canvas.text((10, 10), title, fill=1)
-        self.oled.canvas.text((10, 30), message, fill=1)
-        # Now show the mesasge on the screen
-        self.oled.display()
+        self.show_message(title=title, message=message)
 
     def read_config(self):
         # Read the config file when starting up.
@@ -183,20 +179,17 @@ class launcher:
     def run(self):
         """ Main Running loop controling bot mode and menu state """
         # Show state on OLED display
-        self.show_message('Booting...')
+        self.show_message(title='Booting...')
 
         # Read config file FIRST
         self.read_config()
 
-        self.show_message('Initialising Bluetooth...')
+        self.show_message(title='Initialising Bluetooth...')
 
         # Never stop looking for wiimote.
         while not self.killed:
             # Show state on OLED display
-            self.oled.cls()  # Clear screen
-            self.oled.canvas.text((10, 10), 'Waiting for WiiMote...', fill=1)
-            self.oled.canvas.text((10, 30), '***Press 1+2 now ***', fill=1)
-            self.oled.display()
+            self.show_message(title='Waiting for WiiMote...', message='***Press 1+2 now ***')
 
             self.wiimote = None
             try:
@@ -272,4 +265,4 @@ if __name__ == "__main__":
         print("Stopping")
         print(str(e))
         # Show state on OLED display
-        launcher.show_message('Exited Python Code')
+        launcher.show_message(title='Exited Python Code')
