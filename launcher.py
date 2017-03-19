@@ -97,35 +97,22 @@ class launcher:
 
     def show_motor_config(self, left):
         """ Show motor/aux config on OLED display """
-        if left:
-            title = "Left Motor:"
-            message = str(self.core.left_servo.servo_min) + '/'\
-                + str(self.core.left_servo.servo_mid) + '/'\
-                + str(self.core.left_servo.servo_max)
-        else:
-            title = "Right Motor:"
-            message = str(self.core.right_servo.servo_min) + '/'\
-                + str(self.core.right_servo.servo_mid) + '/'\
-                + str(self.core.right_servo.servo_max)
+        side_label = 'Left' if left else 'Right'
+        title = '%s Motor:' % side_label
+        servo = self.core.left_servo if left else self.core.right_servo
 
-        self.oled.cls()  # Clear Screen
-        self.oled.canvas.text((10, 10), title, fill=1)
-        self.oled.canvas.text((10, 30), message, fill=1)
-        # Now show the mesasge on the screen
-        self.oled.display()
+        self.display_config(title, servo)
 
     def show_aux_1_config(self, left):
         """ Show motor/aux config on OLED display """
-        if left:
-            title = "Left Aux 1:"
-            message = str(self.core.left_aux_1_servo.servo_min) + '/'\
-                + str(self.core.left_aux_1_servo.servo_mid) + '/'\
-                + str(self.core.left_aux_1_servo.servo_max)
-        else:
-            title = "Right Aux 1:"
-            message = str(self.core.right_aux_1_servo.servo_min) + '/'\
-                + str(self.core.right_aux_1_servo.servo_mid) + '/'\
-                + str(self.core.right_aux_1_servo.servo_max)
+        side_label = 'Left' if left else 'Right'
+        title = '%s Aux 1:' % side_label
+        servo = self.core.left_aux_1_servo if left else self.core.right_aux_1_servo
+
+        self.display_config(title, servo)
+
+    def display_config(self, title, servo):
+        message = '%d / %d / %d' % (servo.servo_min, servo.servo_mid, servo.servo_max)
 
         self.oled.cls()  # Clear Screen
         self.oled.canvas.text((10, 10), title, fill=1)
