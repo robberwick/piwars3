@@ -54,7 +54,7 @@ class launcher:
     def stop_threads(self):
         """ Single point of call to stop any RC or Challenge Threads """
         if self.challenge:
-            if (self.mode == self.MODE_CALIBRATION):
+            if self.mode == self.MODE_CALIBRATION:
                 # Write the config file when exiting the calibration module.
                 self.challenge.write_config()
 
@@ -162,8 +162,7 @@ class launcher:
 
         # Inform user we are about to start RC mode
         logging.info("Entering into Calibration Mode")
-        self.challenge = \
-            Calibration.Calibration(self.core, self.wiimote, self)
+        self.challenge = Calibration.Calibration(self.core, self.wiimote, self)
 
         # Create and start a new thread
         # running the remote control script
@@ -189,7 +188,10 @@ class launcher:
         # Never stop looking for wiimote.
         while not self.killed:
             # Show state on OLED display
-            self.show_message(title='Waiting for WiiMote...', message='***Press 1+2 now ***')
+            self.show_message(
+                title='Waiting for WiiMote...',
+                message='***Press 1+2 now ***'
+            )
 
             self.wiimote = None
             try:
