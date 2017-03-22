@@ -1,10 +1,11 @@
-import core
+import os.path
 import time
+import json
+from enum import Enum
+
+import core
 import cwiid
 from lib_oled96 import ssd1306
-import os.path
-from ConfigParser import SafeConfigParser
-from enum import Enum
 
 
 class CalibrationMode(Enum):
@@ -18,7 +19,7 @@ class CalibrationMode(Enum):
 class Calibration:
     def __init__(self, core_module, wm, oled):
         """Class Constructor"""
-        self.filename = "motors.ini"
+        self.filename = "config.json"
         self.killed = False
         self.core = core_module
         self.wiimote = wm
@@ -142,99 +143,51 @@ class Calibration:
 
     def read_config(self):
         """ Read the motor defaults from the config file. """
+        print("Looking for config")
 
-        print("Reading Config")
+        if not self.core or not os.path.exists(self.filename):
+            print("No config found - skipping")
 
-        # Only bother reading if file exists
-        if os.path.isfile(self.filename):
-            # Get config file
-            config = SafeConfigParser()
-            config.read(self.filename)
+        print("Config found - attempting to load")
+        try:
+            with open(self.filename, 'w') as f:
+                config = json.loads(f.read())
 
-            # Read the motor min/mid/max servo ranges
-            if self.core is not None:
-                # Read Wheel motor ESC ranges
-                self.core.left_servo.servo_min =\
-                    int(config.get('motors', 'LEFT_MIN'))
-                self.core.left_servo.servo_mid =\
-                    int(config.get('motors', 'LEFT_MID'))
-                self.core.left_servo.servo_max =\
-                    int(config.get('motors', 'LEFT_MAX'))
+                for servo_attr, servo_values in config.items():
+                    servo = getattr(self.core, servo_attr)
+                    servo.min = servo_values['min']
+                    servo.mid = servo_values['mid']
+                    servo.max = servo_values['max']
 
-                self.core.right_servo.servo_min =\
-                    int(config.get('motors', 'RIGHT_MIN'))
-                self.core.right_servo.servo_mid =\
-                    int(config.get('motors', 'RIGHT_MID'))
-                self.core.right_servo.servo_max =\
-                    int(config.get('motors', 'RIGHT_MAX'))
-
-                # Read Auxilery ESC ranges
-                self.core.left_aux_1_servo.servo_min = \
-                    int(config.get('motors', 'LEFT_AUX_1_MIN'))
-                self.core.left_aux_1_servo.servo_mid = \
-                    int(config.get('motors', 'LEFT_AUX_1_MID'))
-                self.core.left_aux_1_servo.servo_max = \
-                    int(config.get('motors', 'LEFT_AUX_1_MAX'))
-
-                self.core.right_aux_1_servo.servo_min = \
-                    int(config.get('motors', 'RIGHT_AUX_1_MIN'))
-                self.core.right_aux_1_servo.servo_mid = \
-                    int(config.get('motors', 'RIGHT_AUX_1_MID'))
-                self.core.right_aux_1_servo.servo_max = \
-                    int(config.get('motors', 'RIGHT_AUX_1_MAX'))
-        print("Finished Reading Config")
+            print("Finished reading config")
+        except IOError as e:
+            print('Could not load config. An IO Error occurred:', e)
+        except json.JSONDecodeError as e:
+            print('There was an error decoding the config:', e)
 
     def write_config(self):
-        """ Read the motor defaults from the config file. """
-        self.filename = "motors.ini"
+        """Write out the motor defaults to the config file. """
+        self.filename = "motors.json"
 
-        # Get config file
-        config = SafeConfigParser()
-        # Only bother reading if file exists
-        if os.path.isfile(self.filename):
-            config.read(self.filename)
+        config = {}
 
-        # *** Server Settings ***
-        try:
-            config.add_section('motors')
-        except:
-            print("Failed to add, could already exist")
+        servo_attrs = [
+            'left_servo',
+            'right_servo',
+            'left_aux_1_servo',
+            'right_aux_1_servo'
+        ]
 
-        # Write out the wheel motor ESC ranges
-        config.set('motors', 'LEFT_MIN', str(self.core.left_servo.servo_min))
-        config.set('motors', 'LEFT_MID', str(self.core.left_servo.servo_mid))
-        config.set('motors', 'LEFT_MAX', str(self.core.left_servo.servo_max))
+        for (servo_attr) in servo_attrs:
+            servo_instance = getattr(self.core, servo_attr)
+            config[servo_attr] = dict(
+                min=servo_instance.servo_min,
+                mid=servo_instance.servo_mid,
+                max=servo_instance.servo_max,
+            )
 
-        config.set('motors', 'RIGHT_MIN', str(self.core.right_servo.servo_min))
-        config.set('motors', 'RIGHT_MID', str(self.core.right_servo.servo_mid))
-        config.set('motors', 'RIGHT_MAX', str(self.core.right_servo.servo_max))
-
-        # Write out the Auxilery ESC ranges
-        config.set(
-            'motors',
-            'LEFT_AUX_1_MIN',
-            str(self.core.left_aux_1_servo.servo_min))
-        config.set(
-            'motors',
-            'LEFT_AUX_1_MID',
-            str(self.core.left_aux_1_servo.servo_mid))
-        config.set(
-            'motors',
-            'LEFT_AUX_1_MAX',
-            str(self.core.left_aux_1_servo.servo_max))
-        # And now the right
-        config.set(
-            'motors',
-            'RIGHT_AUX_1_MIN',
-            str(self.core.right_aux_1_servo.servo_min))
-        config.set(
-            'motors',
-            'RIGHT_AUX_1_MID',
-            str(self.core.right_aux_1_servo.servo_mid))
-        config.set(
-            'motors',
-            'RIGHT_AUX_1_MAX',
-            str(self.core.right_aux_1_servo.servo_max))
+        with open(self.filename, 'w') as f:
+            f.write(json.dumps(config))
 
 
 if __name__ == "__main__":
