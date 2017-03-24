@@ -5,7 +5,6 @@ from enum import Enum
 
 import core
 import cwiid
-from lib_oled96 import ssd1306
 
 
 class CalibrationMode(Enum):
