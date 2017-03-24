@@ -153,7 +153,7 @@ class Calibration:
             with open(self.filename, 'w') as f:
                 config = json.loads(f.read())
 
-                for servo_attr, servo_values in config.items():
+                for servo_attr, servo_values in config.iteritems():
                     servo = getattr(self.core, servo_attr)
                     servo.min = servo_values['min']
                     servo.mid = servo_values['mid']
